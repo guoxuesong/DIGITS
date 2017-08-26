@@ -162,7 +162,12 @@ class DeepstacksTrainTask(TrainTask):
     @override
     def task_arguments(self, resources, env):
 
-        args = [sys.executable,
+        if 'TASK_WRAPPER' in os.environ: #'/home/ubuntu/work/train.sh'
+            executable=os.environ['TASK_WRAPPER']
+        else:
+            executable=sys.executable
+
+        args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                 '--network=%s' % self.model_file,
                 '--epoch=%d' % int(self.train_epochs),
@@ -532,7 +537,12 @@ class DeepstacksTrainTask(TrainTask):
 
         file_to_load = self.get_snapshot(snapshot_epoch)
 
-        args = [sys.executable,
+        if 'TASK_WRAPPER' in os.environ: #'/home/ubuntu/work/train.sh'
+            executable=os.environ['TASK_WRAPPER']
+        else:
+            executable=sys.executable
+
+        args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                 '--inference_db=%s' % temp_image_path,
                 '--network=%s' % self.model_file,
@@ -831,7 +841,12 @@ class DeepstacksTrainTask(TrainTask):
 
             file_to_load = self.get_snapshot(snapshot_epoch)
 
-            args = [sys.executable,
+            if 'TASK_WRAPPER' in os.environ: #'/home/ubuntu/work/train.sh'
+                executable=os.environ['TASK_WRAPPER']
+            else:
+                executable=sys.executable
+
+            args = [executable,
                     os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                     '--testMany=1',
                     '--allPredictions=1',  # all predictions are grabbed and formatted as required by DIGITS
