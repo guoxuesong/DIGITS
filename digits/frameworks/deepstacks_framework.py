@@ -11,7 +11,7 @@ from digits.utils import subclass, override, constants
 
 @subclass
 class DeepstacksFramework(Framework):
-    NAME = 'Deepstacks'
+    NAME = 'Deepstacks.Lasagne'
     CLASS = 'deepstacks'
     CAN_SHUFFLE_DATA = False
     SUPPORTS_PYTHON_LAYERS_FILE = False
