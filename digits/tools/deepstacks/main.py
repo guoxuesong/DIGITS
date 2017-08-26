@@ -4,7 +4,7 @@
 
 import deepstacks
 from deepstacks.framework.main import *
-import deepstacks.framework.using_lmdb
+#import deepstacks.framework.using_lmdb
 import deepstacks.framework.inference_logging
 from deepstacks.macros import *
 from deepstacks.framework.macros import *
