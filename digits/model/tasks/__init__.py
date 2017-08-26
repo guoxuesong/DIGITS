@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 from .caffe_train import CaffeTrainTask
+from .deepstacks_train import DeepstacksTrainTask
 from .torch_train import TorchTrainTask
 from .train import TrainTask
 
@@ -9,6 +10,7 @@ __all__ = [
     'CaffeTrainTask',
     'TorchTrainTask',
     'TrainTask',
+    'DeepstacksTrainTask',
 ]
 
 from digits.config import config_value  # noqa

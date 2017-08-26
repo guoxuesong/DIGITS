@@ -4,12 +4,14 @@ from __future__ import absolute_import
 from .caffe_framework import CaffeFramework
 from .framework import Framework
 from .torch_framework import TorchFramework
+from .deepstacks_framework import DeepstacksFramework
 from digits.config import config_value
 
 __all__ = [
     'Framework',
     'CaffeFramework',
     'TorchFramework',
+    'DeepstacksFramework',
 ]
 
 if config_value('tensorflow')['enabled']:
@@ -29,6 +31,8 @@ tensorflow = TensorflowFramework() if config_value('tensorflow')['enabled'] else
 # caffe is mandatory
 caffe = CaffeFramework()
 
+deepstacks = DeepstacksFramework()
+
 #
 #  utility functions
 #
@@ -44,6 +48,8 @@ def get_frameworks():
         frameworks.append(torch)
     if tensorflow:
         frameworks.append(tensorflow)
+    if deepstacks:
+        frameworks.append(deepstacks)
     return frameworks
 
 
