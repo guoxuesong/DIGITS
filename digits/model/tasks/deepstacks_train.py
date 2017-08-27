@@ -171,7 +171,7 @@ class DeepstacksTrainTask(TrainTask):
 
         args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
-                '--snapshotFromOne=1',
+                '--snapshotFromZero=1',
                 '--network=%s' % self.model_file,
                 '--epoch=%d' % int(self.train_epochs),
                 '--networkDirectory=%s' % self.job_dir,
@@ -547,7 +547,7 @@ class DeepstacksTrainTask(TrainTask):
 
         args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
-                '--snapshotFromOne=1',
+                '--snapshotFromZero=1',
                 '--inference_db=%s' % temp_image_path,
                 '--network=%s' % self.model_file,
                 '--networkDirectory=%s' % self.job_dir,
@@ -852,7 +852,7 @@ class DeepstacksTrainTask(TrainTask):
 
             args = [executable,
                     os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
-                    '--snapshotFromOne=1',
+                    '--snapshotFromZero=1',
                     '--testMany=1',
                     '--allPredictions=1',  # all predictions are grabbed and formatted as required by DIGITS
                     '--inference_db=%s' % str(temp_dir_path),
