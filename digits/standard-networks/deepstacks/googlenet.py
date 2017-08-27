@@ -12,10 +12,10 @@ network=(
         (0,slice(16,256-16),0,0,0,0,{'axis':3}),
         (googlenet,1000),
         (ln,'loss1/prob'),
-        (classify,'y',0.3),
+        (classify,'target',0.3),
         (ln,'loss2/prob'),
-        (classify,'y',0.3),
+        (classify,'target',0.3),
         (ln,'prob'),
-        (classify,'y'),
+        (classify,'target'),
         (ln,'prob'),
         )

@@ -24,6 +24,6 @@ def lenet(n):
 network=(
         (0,0,0,0,0,0,{'nonlinearity':lambda x:x*0.0125}),
         (lenet,10),
-        (classify,'y'),
+        (classify,'target'),
         (ln,'prob'),
         )

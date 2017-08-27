@@ -30,6 +30,6 @@ network=(
         (0,slice(16,256-16),0,0,0,0,{'axis':2}),
         (0,slice(16,256-16),0,0,0,0,{'axis':3}),
         (alexnet,1000),
-        (classify,'y'),
+        (classify,'target'),
         (ln,'prob'),
         )
