@@ -172,6 +172,7 @@ class DeepstacksTrainTask(TrainTask):
         args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                 '--snapshotFromZero=1',
+                '--digits=1',
                 '--network=%s' % self.model_file,
                 '--epoch=%d' % int(self.train_epochs),
                 '--networkDirectory=%s' % self.job_dir,
@@ -244,20 +245,22 @@ class DeepstacksTrainTask(TrainTask):
 
         if self.solver_type == 'SGD':
             args.append('--optimization=sgd')
-        #elif self.solver_type == 'ADADELTA':
-        #    args.append('--optimization=adadelta')
-        #elif self.solver_type == 'ADAGRAD':
-        #    args.append('--optimization=adagrad')
+        elif self.solver_type == 'ADADELTA':
+            args.append('--optimization=adadelta')
+        elif self.solver_type == 'ADAGRAD':
+            args.append('--optimization=adagrad')
         #elif self.solver_type == 'ADAGRADDA':
         #    args.append('--optimization=adagradda')
         elif self.solver_type == 'MOMENTUM':
             args.append('--optimization=momentum')
+        elif self.solver_type == 'NESTEROV':
+            args.append('--optimization=nesterov_momentum')
         elif self.solver_type == 'ADAM':
             args.append('--optimization=adam')
         #elif self.solver_type == 'FTRL':
         #    args.append('--optimization=ftrl')
-        #elif self.solver_type == 'RMSPROP':
-        #    args.append('--optimization=rmsprop')
+        elif self.solver_type == 'RMSPROP':
+            args.append('--optimization=rmsprop')
         else:
             raise ValueError('Unknown solver_type %s' % self.solver_type)
 
@@ -548,6 +551,7 @@ class DeepstacksTrainTask(TrainTask):
         args = [executable,
                 os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                 '--snapshotFromZero=1',
+                '--digits=1',
                 '--inference_db=%s' % temp_image_path,
                 '--network=%s' % self.model_file,
                 '--networkDirectory=%s' % self.job_dir,
@@ -853,6 +857,7 @@ class DeepstacksTrainTask(TrainTask):
             args = [executable,
                     os.path.join(os.path.dirname(os.path.abspath(digits.__file__)), 'tools', 'deepstacks', 'main.py'),
                     '--snapshotFromZero=1',
+                    '--digits=1',
                     '--testMany=1',
                     '--allPredictions=1',  # all predictions are grabbed and formatted as required by DIGITS
                     '--inference_db=%s' % str(temp_dir_path),
