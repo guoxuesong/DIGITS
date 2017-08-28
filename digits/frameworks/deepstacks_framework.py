@@ -16,7 +16,7 @@ class DeepstacksFramework(Framework):
     CAN_SHUFFLE_DATA = False
     SUPPORTS_PYTHON_LAYERS_FILE = False
     SUPPORTS_TIMELINE_TRACING = False
-    SUPPORTED_SOLVER_TYPES = ['SGD', 'MOMENTUM', 'ADAM']
+    SUPPORTED_SOLVER_TYPES = ['SGD', 'ADADELTA', 'ADAGRAD', 'MOMENTUM', 'NESTEROV', 'ADAM', 'RMSPROP']
     SUPPORTED_DATA_TRANSFORMATION_TYPES = ['MEAN_SUBTRACTION']
     def __init__(self):
         super(DeepstacksFramework, self).__init__()
@@ -72,3 +72,6 @@ class DeepstacksFramework(Framework):
         validate a network
         """
         return True
+    @override
+    def can_accumulate_gradients(self):
+        return False
