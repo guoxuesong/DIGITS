@@ -13,10 +13,9 @@ def lenet(n):
             (0,0,2,2,0,0,{'maxpool'}),
             (0,50,5,1,0,0,{}),
             (0,0,2,2,0,0,{'maxpool'}),
-            (0,0,0,0,0,0,{'dropout':0.5}),
             (0,500,0,0,0,0,{'dense'}),
             (0,0,0,0,0,0,{'dropout':0.5}),
-            (0,n,0,0,0,0,{
+            (0,n,0,0,'prob',0,{
                 'dense':True,
                 'nonlinearity':lasagne.nonlinearities.softmax,
                 }),
