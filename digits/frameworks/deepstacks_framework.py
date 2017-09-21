@@ -74,4 +74,4 @@ class DeepstacksFramework(Framework):
         return True
     @override
     def can_accumulate_gradients(self):
-        return False
+        return True
