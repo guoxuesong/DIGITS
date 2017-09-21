@@ -198,6 +198,8 @@ class DeepstacksTrainTask(TrainTask):
         train_label_db_path = self.dataset.get_label_db_path(constants.TRAIN_DB)
         val_feature_db_path = self.dataset.get_feature_db_path(constants.VAL_DB)
         val_label_db_path = self.dataset.get_label_db_path(constants.VAL_DB)
+        test_feature_db_path = self.dataset.get_feature_db_path(constants.TEST_DB)
+        test_label_db_path = self.dataset.get_label_db_path(constants.TEST_DB)
 
         args.append('--train_db=%s' % train_feature_db_path)
         if train_label_db_path:
@@ -206,6 +208,10 @@ class DeepstacksTrainTask(TrainTask):
             args.append('--validation_db=%s' % val_feature_db_path)
         if val_label_db_path:
             args.append('--validation_labels=%s' % val_label_db_path)
+        if test_feature_db_path:
+            args.append('--test_db=%s' % test_feature_db_path)
+        if test_label_db_path:
+            args.append('--test_labels=%s' % test_label_db_path)
 
         # learning rate policy input parameters
         if self.lr_policy['policy'] == 'fixed':
@@ -256,7 +262,7 @@ class DeepstacksTrainTask(TrainTask):
         elif self.solver_type == 'NESTEROV':
             args.append('--optimization=nesterov_momentum')
         elif self.solver_type == 'ADAM':
-            args.append('--optimization=adam')
+            args.append('--optimization=adamax2')
         #elif self.solver_type == 'FTRL':
         #    args.append('--optimization=ftrl')
         elif self.solver_type == 'RMSPROP':
@@ -266,6 +272,9 @@ class DeepstacksTrainTask(TrainTask):
 
         if self.val_interval is not None:
             args.append('--validation_interval=%d' % self.val_interval)
+
+	if self.batch_accumulation:
+            args.append('--accumulation=%d' % self.batch_accumulation)
 
         # if self.traces_interval is not None:
         #args.append('--log_runtime_stats_per_step=%d' % self.traces_interval)
@@ -577,7 +586,6 @@ class DeepstacksTrainTask(TrainTask):
         #if self.crop_size:
         #    args.append('--croplen=%d' % self.crop_size)
 
-        assert layers != 'all'
         if layers == 'all':
             args.append('--visualize_inf=1')
             args.append('--save=%s' % self.job_dir)
@@ -586,6 +594,8 @@ class DeepstacksTrainTask(TrainTask):
         args = [str(x) for x in args]
 
         self.logger.info('%s classify one task started.' % self.get_framework_id())
+
+        self.logger.info('Task subprocess args: "%s"' % ' '.join(args))
 
         unrecognized_output = []
         predictions = []
@@ -656,19 +666,24 @@ class DeepstacksTrainTask(TrainTask):
             # <root>
             # |- layers
             #    |- 1
-            #    |  [attrs] - op
-            #    |  [attrs] - var
+            #    |  [attrs] - name
             #    |  |- activations
             #    |  |- weights
+            #    |  |- bias
             #    |- 2
             for layer_id, layer in vis_db['layers'].items():
-                op_name = layer.attrs['op']
-                var_name = layer.attrs['var']
-                layer_desc = "%s\n%s" % (op_name, var_name)
+                layer_desc = layer.attrs['name']
+                #op_name = layer.attrs['op']
+                #var_name = layer.attrs['var']
+                #layer_desc = "%s\n%s" % (op_name, var_name)
                 idx = int(layer_id)
                 # activations (tf: operation outputs)
                 if 'activations' in layer:
                     data = np.array(layer['activations'][...])
+                    if len(data.shape)==3:
+                        data = data.transpose(0,2,1) #bc0 -> b0c
+                    elif len(data.shape)==4:
+                        data = data.transpose(0,2,3,1) #bc01 -> b01c
                     if len(data.shape) > 1 and data.shape[0] == 1:
                         # skip batch dimension
                         data = data[0]
@@ -694,17 +709,21 @@ class DeepstacksTrainTask(TrainTask):
                     )
                 # weights (tf: variables)
                 if 'weights' in layer:
-                    data = np.array(layer['weights'][...])
-                    if len(data.shape) == 3:
-                        data = data.transpose(2, 0, 1)
-                    elif len(data.shape) == 4:
-                        data = data.transpose(3, 2, 0, 1)
-                    if 'MatMul' in layer_desc:
+                    data = np.array(layer['weights'][...]) # XXX need to know tf weight order
+                    print data.shape
+#                    if len(data.shape) == 3:
+#                        data = data.transpose(2, 0, 1)
+#                    elif len(data.shape) == 4:
+#                        data = data.transpose(3, 2, 0, 1)
+                    if 'Dense' in layer_desc:
                         vis = None  # too many layers to display?
                     else:
                         vis = utils.image.get_layer_vis_square(data)
                     mean, std, hist = self.get_layer_statistics(data)
                     parameter_count = reduce(operator.mul, data.shape, 1)
+                    if 'bias' in layer:
+                        bias = np.array(layer['bias'][...])
+                        parameter_count += reduce(operator.mul, bias.shape, 1)
                     visualizations.append(
                         {
                             'id':  idx,
@@ -784,6 +803,7 @@ class DeepstacksTrainTask(TrainTask):
         # path to visualization file
         match = re.match(r'Saving visualization to (.*)', message)
         if match:
+            print 'got visualization file'
             self.visualization_file = match.group(1).strip()
             return True
 
