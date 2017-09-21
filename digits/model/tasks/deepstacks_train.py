@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 import operator
 import os
+from scipy.misc import imsave,imread
 import re
 import shutil
 import subprocess
@@ -821,10 +822,10 @@ class DeepstacksTrainTask(TrainTask):
 
         return False  # control should never reach this line.
 
-    #@override
-    #def infer_many(self, data, snapshot_epoch=None, gpu=None, resize=True):
-    #    # resize parameter is unused
-    #    return self.infer_many_images(data, snapshot_epoch=snapshot_epoch, gpu=gpu)
+    @override
+    def infer_many(self, data, snapshot_epoch=None, gpu=None, resize=True):
+        # resize parameter is unused
+        return self.infer_many_images(data, snapshot_epoch=snapshot_epoch, gpu=gpu)
 
     def infer_many_images(self, images, snapshot_epoch=None, gpu=None):
         """
@@ -846,30 +847,18 @@ class DeepstacksTrainTask(TrainTask):
 
         # create a temporary folder to store images and a temporary file
         # to store a list of paths to the images
-        temp_dir_path = tempfile.mkdtemp(suffix='.tfrecords')
+        temp_dir_path = tempfile.mkdtemp(suffix='.tmp')
         try:  # this try...finally clause is used to clean up the temp directory in any case
-            with open(os.path.join(temp_dir_path, 'list.txt'), 'w') as imglist_file:
-                for image in images:
-                    if image.ndim < 3:
-                        image = image[..., np.newaxis]
-                    image = image.astype('float')
-                    temp_image_handle, temp_image_path = tempfile.mkstemp(dir=temp_dir_path, suffix='.tfrecords')
-                    writer = tf.python_io.TFRecordWriter(temp_image_path)
-                    record = tf.train.Example(features=tf.train.Features(feature={
-                        'height': _int64_feature(image.shape[0]),
-                        'width': _int64_feature(image.shape[1]),
-                        'depth': _int64_feature(image.shape[2]),
-                        'image_raw': _float_array_feature(image.flatten()),
-                        'label': _int64_feature(0),
-                        'encoding': _int64_feature(0)}))
-                    writer.write(record.SerializeToString())
-                    writer.close()
-                    imglist_file.write("%s\n" % temp_image_path)
-                    os.close(temp_image_handle)
+            maxn=len(images)-1
+            w=len(str(maxn))
+            for i,image in enumerate(images):
+                filename=(('%0'+str(w)+'d')%i)+'.png'
+                print filename
+                imsave(os.path.join(temp_dir_path,filename),image)
 
             file_to_load = self.get_snapshot(snapshot_epoch)
 
-            if 'TASK_WRAPPER' in os.environ: #'/home/ubuntu/work/train.sh'
+            if 'TASK_WRAPPER' in os.environ: 
                 executable=os.environ['TASK_WRAPPER']
             else:
                 executable=sys.executable
@@ -884,6 +873,7 @@ class DeepstacksTrainTask(TrainTask):
                     '--network=%s' % self.model_file,
                     '--networkDirectory=%s' % self.job_dir,
                     '--weights=%s' % file_to_load,
+                    '--batch_size=1', # deepstacks only support 1 now
                     ]
 
             if hasattr(self.dataset, 'labels_file'):
@@ -907,6 +897,8 @@ class DeepstacksTrainTask(TrainTask):
             args = [str(x) for x in args]
 
             self.logger.info('%s classify many task started.' % self.name())
+
+            self.logger.info('Task subprocess args: "%s"' % ' '.join(args))
 
             env = os.environ.copy()
 #            if gpu is not None:
